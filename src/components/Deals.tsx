@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 
 const deals = [
   { tag: "Limited time", title: "Weekend Getaway", desc: "Up to 35% off on weekend bookings across India", code: "WKND35", color: "from-primary to-primary-glow" },
-  { tag: "New users", title: "First Stay Bonus", desc: "Flat ₹1,000 off on your first hotel booking", code: "FIRST1000", color: "from-accent to-accent-glow" },
-  { tag: "Member only", title: "Gold Member Deals", desc: "Exclusive prices + free breakfast at 5,000+ hotels", code: "GOLD", color: "from-foreground to-primary" },
+  { tag: "New users", title: "First Stay Bonus", desc: "Flat Rs. 1,000 off on your first hotel booking", code: "FIRST1000", color: "from-accent to-accent-glow" },
+  { tag: "Member only", title: "Gold Member Deals", desc: "Exclusive prices + free breakfast at 5,000+ hotels", code: "GOLD", color: "from-[#164880] to-primary" },
 ];
 
 const Deals = () => (

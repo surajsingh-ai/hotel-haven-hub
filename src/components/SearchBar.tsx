@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { CalendarIcon, MapPin, Search, Users, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { saveSearch, type SearchCriteria } from "@/lib/api";
 
 const popularCities = ["Mumbai", "Goa", "Jaipur", "Manali", "Bengaluru", "Udaipur"];
 
-const SearchBar = () => {
+type SearchBarProps = {
+  onSearch: (criteria: SearchCriteria) => void;
+};
+
+const SearchBar = ({ onSearch }: SearchBarProps) => {
+  const navigate = useNavigate();
   const [city, setCity] = useState("");
   const [checkIn, setCheckIn] = useState<Date | undefined>(new Date());
   const [checkOut, setCheckOut] = useState<Date | undefined>(() => {
@@ -21,18 +28,37 @@ const SearchBar = () => {
   const [rooms, setRooms] = useState(1);
   const [showSuggest, setShowSuggest] = useState(false);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!city) return toast.error("Please select a destination");
+    if (!checkIn || !checkOut) return toast.error("Please select check-in and check-out dates");
+
+    const criteria = {
+      city,
+      checkIn: format(checkIn, "yyyy-MM-dd"),
+      checkOut: format(checkOut, "yyyy-MM-dd"),
+      adults,
+      rooms,
+    };
+
+    try {
+      await saveSearch(criteria);
+    } catch {
+      toast.warning("Search saved locally", {
+        description: "The API is offline, but you can still browse available demo hotels.",
+      });
+    }
+
+    onSearch(criteria);
+    navigate(`/search?city=${encodeURIComponent(city)}&checkIn=${criteria.checkIn}&checkOut=${criteria.checkOut}&adults=${adults}&rooms=${rooms}`);
     toast.success(`Searching hotels in ${city}`, {
-      description: `${format(checkIn!, "dd MMM")} → ${format(checkOut!, "dd MMM")} · ${rooms} room · ${adults} guests`,
+      description: `${format(checkIn, "dd MMM")} to ${format(checkOut, "dd MMM")} - ${rooms} room - ${adults} guests`,
     });
   };
 
   return (
-    <div className="bg-card rounded-2xl shadow-search border border-border/50 p-2 grid grid-cols-1 md:grid-cols-12 gap-2">
-      {/* City */}
+    <div className="glass-card rounded-3xl p-2 grid grid-cols-1 md:grid-cols-12 gap-3 shadow-search">
       <div className="md:col-span-4 relative">
-        <div className="px-5 py-4 rounded-xl hover:bg-muted/60 transition-smooth h-full">
+        <div className="glass-panel px-5 py-5 rounded-2xl transition-smooth h-full hover:border-primary/25">
           <label className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">
             City, Hotel or Area
           </label>
@@ -65,11 +91,10 @@ const SearchBar = () => {
         )}
       </div>
 
-      {/* Check in */}
       <div className="md:col-span-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-full text-left px-5 py-4 rounded-xl hover:bg-muted/60 transition-smooth h-full">
+            <button className="w-full text-left px-5 py-5 rounded-2xl glass-panel transition-smooth h-full hover:border-primary/25">
               <span className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Check-in</span>
               <span className="flex items-center gap-2 text-base font-semibold">
                 <CalendarIcon className="size-4 text-primary" />
@@ -83,11 +108,10 @@ const SearchBar = () => {
         </Popover>
       </div>
 
-      {/* Check out */}
       <div className="md:col-span-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-full text-left px-5 py-4 rounded-xl hover:bg-muted/60 transition-smooth h-full">
+            <button className="w-full text-left px-5 py-5 rounded-2xl glass-panel transition-smooth h-full hover:border-primary/25">
               <span className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Check-out</span>
               <span className="flex items-center gap-2 text-base font-semibold">
                 <CalendarIcon className="size-4 text-primary" />
@@ -101,15 +125,14 @@ const SearchBar = () => {
         </Popover>
       </div>
 
-      {/* Guests */}
       <div className="md:col-span-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-full text-left px-5 py-4 rounded-xl hover:bg-muted/60 transition-smooth h-full">
+            <button className="w-full text-left px-5 py-5 rounded-2xl glass-panel transition-smooth h-full hover:border-primary/25">
               <span className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Rooms & Guests</span>
               <span className="flex items-center gap-2 text-base font-semibold">
                 <Users className="size-4 text-primary" />
-                {rooms} Room · {adults} Guests
+                {rooms} Room - {adults} Guests
               </span>
             </button>
           </PopoverTrigger>
@@ -137,11 +160,10 @@ const SearchBar = () => {
         </Popover>
       </div>
 
-      {/* Search button */}
       <div className="md:col-span-2">
         <Button
           onClick={handleSearch}
-          className="w-full h-full min-h-14 gradient-cta hover:opacity-95 text-accent-foreground font-bold text-base rounded-xl shadow-cta border-0"
+          className="w-full h-full min-h-14 gradient-cta hover:opacity-95 text-accent-foreground font-bold text-base rounded-2xl shadow-cta border-0"
         >
           <Search className="size-5" /> Search
         </Button>
